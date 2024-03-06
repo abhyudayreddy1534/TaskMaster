@@ -42,13 +42,55 @@ struct SimpleEntry: TimelineEntry {
 struct TaskMasterWidgetEntryView : View {
     var entry: Provider.Entry
 
+    @Environment(\.widgetFamily) var widgetFamily
+    
+    var fontStyle: Font {
+        if widgetFamily == .systemSmall {
+            return .system(.footnote, design: .rounded)
+        }
+        else {
+            return .system(.headline, design: .rounded)
+        }
+    }
+    
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Emoji:")
-            Text(entry.emoji)
+        GeometryReader { geometry in
+            ZStack {
+//                backgroundGradient
+                
+                Image("rocket-small")
+                    .resizable()
+                    .scaledToFit()
+                
+                Image("logo")
+                    .resizable()
+                    .frame(
+                        width: widgetFamily != .systemSmall ? 56 : 36,
+                        height: widgetFamily != .systemSmall ? 56 : 36)
+                    .offset(x:geometry.size.width / 2 - 20,
+                            y:geometry.size.height / -2 + 20)
+                    .padding(.top, widgetFamily != .systemSmall ? 32 : 12)
+                    .padding(.trailing, widgetFamily != .systemSmall ? 32 : 12)
+                
+                HStack {
+                    
+                    Text("Let's Do It")
+                        .foregroundStyle(.white)
+                        .font(fontStyle)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(.black)
+                        .opacity(0.5)
+                    .clipShape(Capsule())
+                    
+                    if widgetFamily != .systemSmall {
+                        Spacer()
+                    }
+                }
+                .padding()
+                .offset(y: geometry.size.height / 2 - 25)
+            }
         }
     }
 }
@@ -60,21 +102,21 @@ struct TaskMasterWidget: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             if #available(iOS 17.0, *) {
                 TaskMasterWidgetEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
+                    .containerBackground(backgroundGradient, for: .widget)
             } else {
                 TaskMasterWidgetEntryView(entry: entry)
                     .padding()
-                    .background()
+                    .background(backgroundGradient)
             }
         }
-        .configurationDisplayName("My Widget")
-        .description("This is an example widget.")
+        .configurationDisplayName("Task Master Launcher")
+        .description("This is an example widget for To-Do list app.")
     }
 }
 
-#Preview(as: .systemSmall) {
+#Preview(as: .systemMedium) {
     TaskMasterWidget()
 } timeline: {
     SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
 }
+
